@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<!--
+  Planar 2-link arm with a heavy payload at the tip, for the control lab.
+
+  Same conventions as pendulum.urdf:
+    * shoulder_joint at (0, -0.25, 1.3), beside the post;
+    * at q = (0, 0) the whole arm hangs straight DOWN;
+    * both joints turn about -y, positive angles swing towards +x;
+    * elbow_joint angle is measured relative to the upper arm;
+    * each joint has viscous damping (0.5 N m s/rad) and friction (0.2 N m).
+
+  Upper arm 0.6 m (0.8 kg), forearm 0.5 m (0.4 kg), elbow motor 1.5 kg at the elbow,
+  payload 4 kg at the tip. The forearm sits 0.1 m further out in -y so it can pass the upper arm.
+  You will not need these numbers: in this part the dynamics come from the simulator.
+-->
+<robot name="arm_2r">
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.25" length="0.1"/></geometry>
+      <material name="cyan"><color rgba="0 0.9 0.9 1.0"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <mass value="100"/>
+      <inertia ixx="10" ixy="0" ixz="0" iyy="10" iyz="0" izz="10"/>
+    </inertial>
+  </link>
+
+  <link name="body_link">
+    <visual>
+      <origin xyz="0 0 0.6" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.08" length="1.2"/></geometry>
+      <material name="blue"><color rgba="0 0 0.9 1.0"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0.6" rpy="0 0 0"/>
+      <mass value="5"/>
+      <inertia ixx="0.6" ixy="0" ixz="0" iyy="0.6" iyz="0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <link name="shoulder_motor_link">
+    <visual>
+      <origin xyz="0 0.1 0" rpy="1.5707963 0 0"/>
+      <geometry><cylinder radius="0.06" length="0.3"/></geometry>
+      <material name="cyan"><color rgba="0 0.9 0.9 1.0"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0084" ixy="0" ixz="0" iyy="0.0018" iyz="0" izz="0.0084"/>
+    </inertial>
+  </link>
+
+  <link name="upper_arm_link">
+    <visual>
+      <origin xyz="0.3 0 0" rpy="0 1.5707963 0"/>
+      <geometry><cylinder radius="0.03" length="0.6"/></geometry>
+      <material name="red"><color rgba="0.6 0 0 1.0"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0.3 0 0" rpy="0 0 0"/>
+      <mass value="0.8"/>
+      <inertia ixx="0.00036" ixy="0" ixz="0" iyy="0.024" iyz="0" izz="0.024"/>
+    </inertial>
+  </link>
+
+  <link name="elbow_motor_link">
+    <visual>
+      <origin xyz="0 0.05 0" rpy="1.5707963 0 0"/>
+      <geometry><cylinder radius="0.06" length="0.15"/></geometry>
+      <material name="cyan"><color rgba="0 0.9 0.9 1.0"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.5"/>
+      <inertia ixx="0.004" ixy="0" ixz="0" iyy="0.0027" iyz="0" izz="0.004"/>
+    </inertial>
+  </link>
+
+  <link name="forearm_link">
+    <visual>
+      <origin xyz="0.25 0 0" rpy="0 1.5707963 0"/>
+      <geometry><cylinder radius="0.025" length="0.5"/></geometry>
+      <material name="orange"><color rgba="0.9 0.5 0 1.0"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0.25 0 0" rpy="0 0 0"/>
+      <mass value="0.4"/>
+      <inertia ixx="0.000125" ixy="0" ixz="0" iyy="0.008333" iyz="0" izz="0.008333"/>
+    </inertial>
+  </link>
+
+  <!-- Payload at the tip. Its frame origin is the end-effector. -->
+  <link name="tip_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><sphere radius="0.08"/></geometry>
+      <material name="green"><color rgba="0 1 0 1"/></material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="4.0"/>
+      <inertia ixx="0.01024" ixy="0" ixz="0" iyy="0.01024" iyz="0" izz="0.01024"/>
+    </inertial>
+  </link>
+
+  <joint name="post_fixed" type="fixed">
+    <parent link="base_link"/>
+    <child link="body_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="shoulder_joint" type="continuous">
+    <parent link="body_link"/>
+    <child link="shoulder_motor_link"/>
+    <origin xyz="0 -0.25 1.3" rpy="0 1.5707963 0"/>
+    <axis xyz="0 -1 0"/>
+    <dynamics damping="0.5" friction="0.2"/>
+  </joint>
+
+  <joint name="upper_arm_fixed" type="fixed">
+    <parent link="shoulder_motor_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="elbow_joint" type="continuous">
+    <parent link="upper_arm_link"/>
+    <child link="elbow_motor_link"/>
+    <origin xyz="0.6 -0.1 0" rpy="0 0 0"/>
+    <axis xyz="0 -1 0"/>
+    <dynamics damping="0.5" friction="0.2"/>
+  </joint>
+
+  <joint name="forearm_fixed" type="fixed">
+    <parent link="elbow_motor_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="tip_fixed" type="fixed">
+    <parent link="forearm_link"/>
+    <child link="tip_link"/>
+    <origin xyz="0.5 0 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>
